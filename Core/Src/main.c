@@ -1,3 +1,4 @@
+#include<stdio.h>
 #include <stdint.h>
 #include "stm32f446xx.h"
 
@@ -18,7 +19,11 @@ static uint16_t compute_uart_bd(uint32_t PeriphClk, uint32_t BaudRate);
 
 void uar2_tx_init(void);
 void uart2_write(int ch);
-
+int __io_putchar(int ch)
+{
+	uart2_write(ch);
+	return ch;
+}
 int main(void)
 {
 
@@ -27,13 +32,14 @@ int main(void)
 
 	while(1)
 	{
-		uart2_write('Y');
+		printf("hello form stm32......\n\r");
 	}
 }
 
 
 void uar2_tx_init(void)
 {
+	/****************Configure uart gpio pin***************/
 	/*Enable clock access to gpioa */
 	RCC->AHB1ENR |= GPIOAEN;
 
@@ -47,6 +53,8 @@ void uar2_tx_init(void)
 	GPIOA->AFR[0] |= (1U<<10);
 	GPIOA->AFR[0] &= ~(1U<<11);
 
+
+	/****************Configure uart module ***************/
 	/*Enable clock access to uart2 */
 	RCC->APB1ENR |= UART2EN;
 
@@ -71,9 +79,6 @@ void uart2_write(int ch)
   /*Write to transmit data register*/
 	USART2->DR	=  (ch & 0xFF);
 }
-
-
-
 
 static void uart_set_baudrate(USART_TypeDef *USARTx, uint32_t PeriphClk,  uint32_t BaudRate)
 {
