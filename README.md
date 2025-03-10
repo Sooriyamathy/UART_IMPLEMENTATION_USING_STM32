@@ -67,7 +67,7 @@ static uint16_t compute_uart_bd(uint32_t PeriphClk, uint32_t BaudRate)
 
 ### 1. Clone the repository:
 ```bash
-git clone https://github.com/sooriyamathye/stm32-uart2.git
+git clone https://github.com/Sooriyamathy/UART_IMPLEMENTATION_USING_STM32.git
 ```
 
 ### 2. Open the project in your IDE (Keil, STM32CubeIDE, etc.).
