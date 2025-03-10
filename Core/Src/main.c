@@ -34,7 +34,6 @@ int main(void)
 
 void uar2_tx_init(void)
 {
-	/****************Configure uart gpio pin***************/
 	/*Enable clock access to gpioa */
 	RCC->AHB1ENR |= GPIOAEN;
 
@@ -48,8 +47,6 @@ void uar2_tx_init(void)
 	GPIOA->AFR[0] |= (1U<<10);
 	GPIOA->AFR[0] &= ~(1U<<11);
 
-
-	/****************Configure uart module ***************/
 	/*Enable clock access to uart2 */
 	RCC->APB1ENR |= UART2EN;
 
