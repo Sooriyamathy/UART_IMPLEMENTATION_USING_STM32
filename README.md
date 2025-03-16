@@ -1,93 +1,159 @@
-# STM32 UART2 Transmission Example
 
-This repository contains a basic example of setting up UART2 on the STM32F446xx microcontroller using HAL-less direct register programming. The example demonstrates how to initialize UART2, configure its GPIO pin for transmission, and send a character over UART.
+# STM32 UART Communication with RealTerm (STM32F446RE)
 
-## Features
+This project demonstrates UART communication between an STM32F446RE microcontroller and a PC using RealTerm for viewing and interacting with the data sent and received over UART. The communication allows the user to send commands like `LED_ON` and `LED_OFF` from RealTerm, and the STM32F446RE responds by toggling an LED on the board.
 
-- **UART2 Initialization**: Initializes USART2 on STM32F446xx.
-- **GPIO Configuration**: Configures the appropriate GPIO pin (PA2) for UART transmission (TX).
-- **Baud Rate Setup**: Configures UART baud rate to 115200.
-- **Transmission**: Sends the character `'Y'` continuously over UART.
+## Project Overview
 
-## System Requirements
+In this project, the STM32F446RE communicates with a PC through UART, where commands are sent from the user via RealTerm, and the STM32 microcontroller processes these commands to control an LED.
 
-- **STM32F446xx** microcontroller or compatible hardware.
-- **STM32CubeMX** (optional for pinout and clock configuration).
-- **STM32 HAL** is not used; direct register manipulation is employed.
-- **Keil uVision** or any compatible IDE with GCC for STM32.
+### Key Features:
+- **Low-Level UART Configuration:** This project uses STM32 low-level register programming to configure and manage UART communication.
+- **RealTerm for Command and Response:** RealTerm is used for sending commands to the STM32 and displaying responses.
+- **Simple LED Control:** The STM32 responds to commands `LED_ON` and `LED_OFF` by toggling the state of an onboard LED.
 
-## Pin Configuration
+## Hardware Requirements
+- STM32F446RE microcontroller
+- USB to TTL adapter (for connecting STM32 to your PC)
+- Jumper wires to connect TX and RX pins between the STM32 and USB to TTL adapter
+- PC with RealTerm software installed
+- LED connected to an available GPIO pin on STM32F446RE (e.g., PA5 for onboard LED)
 
-- **TX (PA2)**: This pin is configured for UART2 transmission.
+## Software Requirements
+- STM32CubeIDE or your preferred development environment for STM32
+- RealTerm (for UART communication with the STM32)
 
-## Clock Configuration
+## Communication Setup
 
-- **System Clock (SYS_FREQ)**: 16 MHz.
-- **APB1 Clock**: Directly derived from the system clock.
-  
-## Code Walkthrough
+### Wiring Configuration
+- **STM32 TX (Transmit)** → **USB to TTL RX (Receive)**
+- **STM32 RX (Receive)** → **USB to TTL TX (Transmit)**
+- **GND** → **GND**
 
-### 1. `uar2_tx_init()`
+### RealTerm Setup
+1. Open **RealTerm** on your PC.
+2. Set the correct serial port corresponding to the USB to TTL adapter.
+3. Set the communication parameters to match the STM32 UART configuration (e.g., Baud rate: 9600, Data bits: 8, Stop bits: 1, Parity: None).
+4. Use RealTerm to send commands and display responses.
 
-This function initializes UART2 for transmission:
+## STM32 UART Setup
 
-- **GPIO Configuration**:
-  - Enables the clock for GPIOA.
-  - Configures PA2 as an alternate function (AF07) for UART_TX.
-  
-- **UART2 Configuration**:
-  - Enables the clock for UART2.
-  - Configures the baud rate using the `uart_set_baudrate` function.
-  - Sets the transfer direction (TX).
-  - Enables the UART2 module.
+The UART configuration for STM32F446RE is done using low-level registers. Below are the key steps in configuring the UART and processing commands.
 
-### 2. `uart2_write()`
+### 1. UART Initialization
+The STM32 UART initialization is done by configuring the following registers:
+- **BRR** (Baud Rate Register) for setting the baud rate.
+- **CR1** (Control Register 1) to enable the transmitter, receiver, and interrupt (if necessary).
+- **CR2** (Control Register 2) to configure stop bits.
+- **CR3** (Control Register 3) to manage flow control.
 
-This function writes a character to the UART2 data register:
-
-- It waits for the UART's TXE (Transmit Data Register Empty) flag to be set.
-- Once set, it writes the provided character into the data register (USART2->DR).
-
-### 3. `uart_set_baudrate()`
-
-This function sets the UART baud rate by computing the baud rate value and writing it into the BRR register.
-
-### 4. `compute_uart_bd()`
-
-This function computes the value for the baud rate based on the peripheral clock and desired baud rate.
+### 2. UART Transmission
+To send data, the STM32 writes the data to the **DR** (Data Register) and waits for the **TXE** flag to be set before sending the next byte:
 
 ```c
-static uint16_t compute_uart_bd(uint32_t PeriphClk, uint32_t BaudRate)
-{
-  return ((PeriphClk + (BaudRate/2U)) / BaudRate);
+// Wait for TXE (Transmit Data Register Empty) flag
+while (!(USART1->SR & USART_SR_TXE));
+
+// Send data byte to the USART data register
+USART1->DR = data;
+```
+
+### 3. UART Reception
+For receiving data, the STM32 reads the **DR** register when the **RXNE** flag is set:
+
+```c
+// Wait for RXNE (Read Data Register Not Empty) flag
+while (!(USART1->SR & USART_SR_RXNE));
+
+// Read received data byte
+receivedData = USART1->DR;
+```
+
+### 4. Command Processing
+The STM32 processes the commands `LED_ON` and `LED_OFF` to toggle the state of an LED connected to a GPIO pin.
+
+```c
+if (strcmp(receivedData, "LED_ON") == 0) {
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);  // Turn on LED (PA5)
+} else if (strcmp(receivedData, "LED_OFF") == 0) {
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);  // Turn off LED (PA5)
 }
 ```
 
+### 5. Interrupts (Optional)
+You can also configure UART interrupts for asynchronous reception of data. This allows you to handle incoming commands without polling for data continuously.
+
 ## How to Use
 
-### 1. Clone the repository:
-```bash
-git clone https://github.com/Sooriyamathy/UART_IMPLEMENTATION_USING_STM32.git
-```
+### Step 1: Set up Hardware
+1. Connect the STM32F446RE to the USB to TTL adapter.
+2. Connect the adapter to your PC via USB.
+3. Ensure the LED is connected to GPIO pin PA5 (or any other pin if modified in the code).
 
-### 2. Open the project in your IDE (Keil, STM32CubeIDE, etc.).
+### Step 2: Set up STM32 Environment
+1. Clone this repository to your local machine.
+2. Open the project in STM32CubeIDE (or any other preferred development environment).
+3. Compile and flash the code to the STM32F446RE microcontroller.
 
-### 3. Flash the code to your STM32F446xx microcontroller.
+### Step 3: Open RealTerm
+1. Launch **RealTerm** on your PC.
+2. Select the correct COM port for your USB to TTL adapter.
+3. Configure the baud rate, data bits, stop bits, and parity to match the STM32 configuration (e.g., Baud rate: 9600).
+4. You should now see the output from the STM32 and can start sending commands.
 
-### 4. Use a terminal program (such as PuTTY or Tera Term) to observe the serial output from the microcontroller.
+### Step 4: Interact with the System
+- **Send Commands:** In RealTerm, type `LED_ON` or `LED_OFF` and press Enter.
+- **View Responses:** The STM32 will process the commands and respond accordingly (e.g., turning the LED on or off).
 
-### 5. You should see the character `'Y'` being continuously transmitted over UART.
+## Code Structure
+- **main.c:** Contains the main application code to handle UART communication and LED control.
+- **uart.c:** Functions for initializing and handling UART communication.
+- **gpio.c:** Manages GPIO configuration for controlling the LED.
+- **uart.h:** Header file containing declarations for UART functions.
 
-## Notes
+## Example Command Flow
 
-- The UART2 configuration in this example is minimal and only enables the transmit functionality.
-- Make sure you have configured the correct clock settings and the UART pin (PA2) before flashing the code.
-- The code is written for STM32F446xx, and might require modification for other STM32 series.
+### Sending a Command:
+1. Open RealTerm and connect to the appropriate COM port.
+2. Type `LED_ON` and press Enter.
+
+   **RealTerm (Sent):**
+   ```
+   LED_ON
+   ```
+
+### STM32 Response:
+1. The STM32 turns on the LED and sends a response back.
+
+   **STM32 Response (in RealTerm):**
+   ```
+   LED is now ON.
+   ```
+
+### Sending Another Command:
+1. Type `LED_OFF` and press Enter.
+
+   **RealTerm (Sent):**
+   ```
+   LED_OFF
+   ```
+
+### STM32 Response:
+1. The STM32 turns off the LED and sends a response back.
+
+   **STM32 Response (in RealTerm):**
+   ```
+   LED is now OFF.
+   ```
+
+## Troubleshooting
+
+- **No response from STM32**: Check the wiring between the STM32 and the USB to TTL adapter. Ensure that the TX and RX pins are correctly connected.
+- **RealTerm does not connect**: Make sure you have selected the correct COM port and configured the baud rate and parameters correctly.
+- **LED not toggling**: Ensure the LED is connected to the correct GPIO pin (e.g., PA5) and that the code matches the pin configuration.
+
+## Contributing
+Feel free to fork the repository, contribute bug fixes, or add new features via pull requests. All contributions are welcome!
 
 ## License
-
-This code is open-source and available for modification under the MIT license.
-
----
-
-If you have any questions or need further assistance, feel free to open an issue in the GitHub repository.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
