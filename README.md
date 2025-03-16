@@ -145,7 +145,17 @@ You can also configure UART interrupts for asynchronous reception of data. This 
    ```
    LED IS OFF
    ```
+### Output Example
 
+1. **LED ON Command**: When the `LED_ON` command is sent, the LED lights up as shown below:
+   
+   ![LED ON](https://github.com/Sooriyamathy/UART_IMPLEMENTATION_USING_STM32/blob/main/OUTPUT%20photos/LED_ON.jpg)
+
+2. **LED OFF Command**: When the `LED_OFF` command is sent, the LED turns off as seen in the image below:
+
+   ![LED OFF](https://github.com/Sooriyamathy/UART_IMPLEMENTATION_USING_STM32/blob/main/OUTPUT%20photos/LED_OFF.jpg)
+
+These output images demonstrate the LED's response to the UART commands.
 ## Troubleshooting
 
 - **No response from STM32**: Check the wiring between the STM32 and the USB to TTL adapter. Ensure that the TX and RX pins are correctly connected.
