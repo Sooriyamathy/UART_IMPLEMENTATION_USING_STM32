@@ -127,7 +127,7 @@ You can also configure UART interrupts for asynchronous reception of data. This 
 
    **STM32 Response (in RealTerm):**
    ```
-   LED is now ON.
+   LED IS ON.
    ```
 
 ### Sending Another Command:
@@ -143,7 +143,7 @@ You can also configure UART interrupts for asynchronous reception of data. This 
 
    **STM32 Response (in RealTerm):**
    ```
-   LED is now OFF.
+   LED IS OFF.
    ```
 
 ## Troubleshooting
