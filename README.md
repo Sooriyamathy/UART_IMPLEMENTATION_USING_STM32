@@ -156,4 +156,4 @@ You can also configure UART interrupts for asynchronous reception of data. This 
 Feel free to fork the repository, contribute bug fixes, or add new features via pull requests. All contributions are welcome!
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the GNU License - see the [LICENSE](LICENSE) file for details.
